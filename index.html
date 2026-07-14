@@ -5,56 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Diário de Trade — XAUUSD</title>
 <style>
-  :root { color-scheme: light; }
+  :root { color-scheme: dark; }
   body {
-    --surface-1:      #fcfcfb;
-    --surface-2:      #f9f9f7;
-    --text-primary:   #0b0b0b;
-    --text-secondary: #52514e;
-    --text-muted:     #898781;
-    --gridline:       #e1e0d9;
-    --baseline:       #c3c2b7;
-    --border:         rgba(11,11,11,0.10);
-    --series-1:       #2a78d6;
-    --series-1-wash:  rgba(42,120,214,0.10);
-    --good:           #0ca30c;
-    --good-wash:      rgba(12,163,12,0.10);
-    --critical:       #d03b3b;
-    --critical-wash:  rgba(208,59,59,0.10);
-    --warning:        #eda100;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:where(:not([data-theme="light"])) body {
-      color-scheme: dark;
-      --surface-1:      #1a1a19;
-      --surface-2:      #0d0d0d;
-      --text-primary:   #ffffff;
-      --text-secondary: #c3c2b7;
-      --text-muted:     #898781;
-      --gridline:       #2c2c2a;
-      --baseline:       #383835;
-      --border:         rgba(255,255,255,0.10);
-      --series-1:       #3987e5;
-      --series-1-wash:  rgba(57,135,229,0.14);
-      --good:           #0ca30c;
-      --good-wash:      rgba(12,163,12,0.14);
-      --critical:       #e66767;
-      --critical-wash:  rgba(230,103,103,0.14);
-      --warning:        #c98500;
-    }
-  }
-  :root[data-theme="dark"] body {
-    color-scheme: dark;
-    --surface-1:      #1a1a19;
-    --surface-2:      #0d0d0d;
+    --surface-1:      #1a1216;
+    --surface-2:      #0a0708;
     --text-primary:   #ffffff;
-    --text-secondary: #c3c2b7;
-    --text-muted:     #898781;
-    --gridline:       #2c2c2a;
-    --baseline:       #383835;
+    --text-secondary: #cbb6c0;
+    --text-muted:     #8a7a82;
+    --gridline:       #2e2226;
+    --baseline:       #443640;
     --border:         rgba(255,255,255,0.10);
-    --series-1:       #3987e5;
-    --series-1-wash:  rgba(57,135,229,0.14);
+    --series-1:       #ff2f79;
+    --series-1-dim:   #b31d54;
+    --series-1-wash:  rgba(255,47,121,0.14);
     --good:           #0ca30c;
     --good-wash:      rgba(12,163,12,0.14);
     --critical:       #e66767;
@@ -65,7 +28,9 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    background: var(--surface-2);
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(255,47,121,0.10), transparent 60%),
+      var(--surface-2);
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     color: var(--text-primary);
   }
@@ -83,6 +48,7 @@
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
   }
   .card h2 { font-size: 1rem; margin: 0 0 12px; }
   .card h2 .hint { color: var(--text-muted); font-weight: 400; font-size: 0.8rem; }
@@ -90,17 +56,26 @@
   /* Login screen */
   .login-screen {
     min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+    background:
+      radial-gradient(ellipse 700px 500px at 50% 0%, rgba(255,47,121,0.16), transparent 60%),
+      var(--surface-2);
   }
   .login-card {
     background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px;
     padding: 28px; width: 100%; max-width: 340px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
   }
   .login-card h1 { text-align: center; }
   .login-card .subtitle { text-align: center; }
 
   /* Stat tiles */
   .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
-  .tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+  .tile {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35); transition: border-color 0.15s ease;
+  }
+  .tile:hover { border-color: var(--series-1-dim); }
+  .tile.hero { border-color: var(--series-1); box-shadow: 0 2px 16px rgba(255,47,121,0.25); }
   .tile .label { color: var(--text-secondary); font-size: 0.78rem; margin-bottom: 6px; }
   .tile .value { font-size: 1.5rem; font-weight: 600; font-variant-numeric: proportional-nums; }
   .tile .delta { font-size: 0.8rem; margin-top: 4px; }
@@ -123,6 +98,11 @@
   input, select, textarea {
     width: 100%; padding: 8px 10px; border-radius: 8px;
     border: 1px solid var(--border); background: var(--surface-2); color: var(--text-primary);
+    transition: border-color 0.15s ease;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--series-1);
+    box-shadow: 0 0 0 3px var(--series-1-wash);
   }
   textarea { resize: vertical; min-height: 44px; }
   .field { margin-bottom: 4px; }
@@ -139,13 +119,19 @@
   button.primary {
     background: var(--series-1); color: white; border: none; border-radius: 8px;
     padding: 9px 16px; cursor: pointer; font-weight: 600;
+    box-shadow: 0 2px 12px rgba(255,47,121,0.35);
+    transition: background 0.15s ease, transform 0.1s ease;
   }
-  button.primary:disabled { opacity: 0.6; cursor: default; }
+  button.primary:hover:not(:disabled) { background: #ff4f8f; }
+  button.primary:active:not(:disabled) { transform: translateY(1px); }
+  button.primary:disabled { opacity: 0.6; cursor: default; box-shadow: none; }
   button.secondary {
     background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 8px;
-    padding: 9px 16px; cursor: pointer;
+    padding: 9px 16px; cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease;
   }
+  button.secondary:hover { border-color: var(--series-1); color: var(--text-primary); }
   button.link { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px 6px; font-size: 0.8rem; text-decoration: underline; }
+  button.link:hover { color: var(--series-1); }
   .actions-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
   .error-text { color: var(--critical); font-size: 0.85rem; min-height: 18px; margin: 6px 0; }
 
@@ -193,8 +179,13 @@
   .tab-btn {
     padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border);
     background: var(--surface-1); color: var(--text-secondary); cursor: pointer; font-weight: 600;
+    transition: border-color 0.15s ease, color 0.15s ease;
   }
-  .tab-btn.active { background: var(--series-1); border-color: var(--series-1); color: white; }
+  .tab-btn:hover { border-color: var(--series-1); color: var(--text-primary); }
+  .tab-btn.active {
+    background: var(--series-1); border-color: var(--series-1); color: white;
+    box-shadow: 0 2px 12px rgba(255,47,121,0.35);
+  }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
