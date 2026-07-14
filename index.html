@@ -442,10 +442,14 @@ function attachListeners() {
     loadSettingsForm();
     if (!editingId) document.getElementById('fRiscoPct').value = state.settings.riscoPadraoPct;
     renderAll();
+  }, (err) => {
+    alert('Não foi possível ler as configurações do banco: ' + err.message + '\n\nVerifique se as regras do Firestore foram publicadas.');
   });
   unsubTrades = onSnapshot(collection(db, 'trades'), (snap) => {
     state.trades = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
     renderAll();
+  }, (err) => {
+    alert('Não foi possível ler as operações do banco: ' + err.message + '\n\nVerifique se as regras do Firestore foram publicadas.');
   });
 }
 
@@ -911,6 +915,8 @@ document.getElementById('tradeForm').addEventListener('submit', async (e) => {
       await addDoc(collection(db, 'trades'), trade);
     }
     resetForm();
+  } catch (err) {
+    alert('Não foi possível salvar a operação: ' + err.message);
   } finally {
     btn.disabled = false;
   }
@@ -939,8 +945,12 @@ function startEdit(id) {
 
 async function deleteTrade(id) {
   if (!confirm('Excluir esta operação?')) return;
-  await deleteDoc(doc(db, 'trades', id));
-  if (editingId === id) resetForm();
+  try {
+    await deleteDoc(doc(db, 'trades', id));
+    if (editingId === id) resetForm();
+  } catch (err) {
+    alert('Não foi possível excluir: ' + err.message);
+  }
 }
 
 // ---------- settings ----------
@@ -960,7 +970,11 @@ document.getElementById('btnSaveSettings').addEventListener('click', async () =>
     riscoPadraoPct: Number(document.getElementById('setRiscoPadrao').value || 0),
     moeda: document.getElementById('setMoeda').value.trim() || 'US$'
   };
-  await setDoc(doc(db, 'app', 'settings'), newSettings);
+  try {
+    await setDoc(doc(db, 'app', 'settings'), newSettings);
+  } catch (err) {
+    alert('Não foi possível salvar as configurações: ' + err.message);
+  }
 });
 
 // ---------- table filters ----------
