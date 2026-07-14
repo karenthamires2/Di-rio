@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Só as contas que você criar manualmente no Firebase Auth conseguem
+    // ler/escrever — não há cadastro público no app.
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
