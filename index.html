@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Diário de Trade — XAUUSD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root { color-scheme: dark; }
   body {
@@ -29,65 +32,92 @@
   html, body { margin: 0; padding: 0; }
   body {
     background:
-      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(255,47,121,0.10), transparent 60%),
+      radial-gradient(ellipse 1000px 560px at 12% -10%, rgba(255,47,121,0.18), transparent 60%),
+      radial-gradient(ellipse 800px 620px at 105% 15%, rgba(140,50,220,0.12), transparent 55%),
       var(--surface-2);
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
     color: var(--text-primary);
+    position: relative;
   }
-  .app {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px 16px 64px;
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    opacity: 0.05; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
-  h1 { font-size: 1.4rem; margin: 4px 0 2px; }
-  .subtitle { color: var(--text-secondary); font-size: 0.9rem; margin: 0 0 20px; }
+  h1, h2, .value { font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif; }
+  .app { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 20px 16px 64px; }
+  h1 { font-size: 1.3rem; margin: 0; letter-spacing: -0.01em; }
+  .subtitle { color: var(--text-secondary); font-size: 0.9rem; margin: 4px 0 0; }
+
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark {
+    width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--series-1), #8a2be8);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; color: #fff;
+    box-shadow: 0 4px 18px rgba(255,47,121,0.4);
+  }
 
   .card {
+    position: relative;
     background: var(--surface-1);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 16px;
+    padding: 18px;
     margin-bottom: 16px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+    box-shadow: 0 2px 14px rgba(0,0,0,0.4);
+    overflow: hidden;
   }
-  .card h2 { font-size: 1rem; margin: 0 0 12px; }
-  .card h2 .hint { color: var(--text-muted); font-weight: 400; font-size: 0.8rem; }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--series-1), transparent 70%);
+    opacity: 0.7;
+  }
+  .card h2 { font-size: 1.02rem; margin: 0 0 12px; font-weight: 600; }
+  .card h2 .hint { color: var(--text-muted); font-weight: 400; font-family: 'Inter', sans-serif; font-size: 0.8rem; }
 
   /* Login screen */
   .login-screen {
     min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+    position: relative; z-index: 1;
     background:
-      radial-gradient(ellipse 700px 500px at 50% 0%, rgba(255,47,121,0.16), transparent 60%),
+      radial-gradient(ellipse 800px 560px at 50% 0%, rgba(255,47,121,0.20), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 100%, rgba(140,50,220,0.12), transparent 55%),
       var(--surface-2);
   }
   .login-card {
-    background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px;
-    padding: 28px; width: 100%; max-width: 340px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 20px;
+    padding: 32px; width: 100%; max-width: 340px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.55);
   }
+  .login-card .brand { flex-direction: column; text-align: center; margin-bottom: 8px; }
   .login-card h1 { text-align: center; }
   .login-card .subtitle { text-align: center; }
 
   /* Stat tiles */
   .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
   .tile {
-    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.35); transition: border-color 0.15s ease;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px; padding: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35); transition: border-color 0.15s ease, transform 0.15s ease;
   }
-  .tile:hover { border-color: var(--series-1-dim); }
-  .tile.hero { border-color: var(--series-1); box-shadow: 0 2px 16px rgba(255,47,121,0.25); }
+  .tile:hover { border-color: var(--series-1-dim); transform: translateY(-2px); }
+  .tile.hero {
+    border-color: var(--series-1); box-shadow: 0 4px 24px rgba(255,47,121,0.28);
+    background: linear-gradient(160deg, rgba(255,47,121,0.10), var(--surface-1) 60%);
+  }
   .tile .label { color: var(--text-secondary); font-size: 0.78rem; margin-bottom: 6px; }
   .tile .value { font-size: 1.5rem; font-weight: 600; font-variant-numeric: proportional-nums; }
   .tile .delta { font-size: 0.8rem; margin-top: 4px; }
   .tile .delta.up { color: var(--good); }
   .tile .delta.down { color: var(--critical); }
-  .tile.hero .value { font-size: 1.9rem; }
+  .tile.hero .value { font-size: 2.1rem; }
   .tile .value.up { color: var(--good); }
   .tile .value.down { color: var(--critical); }
 
   .meter-track { width: 100%; height: 10px; border-radius: 999px; background: var(--series-1-wash); margin-top: 8px; overflow: hidden; }
-  .meter-fill { height: 100%; background: var(--series-1); border-radius: 999px; }
-  .meter-fill.good { background: var(--good); }
+  .meter-fill { height: 100%; background: linear-gradient(90deg, var(--series-1), #8a2be8); border-radius: 999px; transition: width 0.4s ease; }
+  .meter-fill.good { background: linear-gradient(90deg, var(--good), #2ecc71); }
 
   /* Forms */
   .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
@@ -117,12 +147,12 @@
   .toggle-btn.active-stop { background: var(--critical-wash); border-color: var(--critical); color: var(--critical); }
 
   button.primary {
-    background: var(--series-1); color: white; border: none; border-radius: 8px;
+    background: linear-gradient(135deg, var(--series-1), #8a2be8); color: white; border: none; border-radius: 10px;
     padding: 9px 16px; cursor: pointer; font-weight: 600;
     box-shadow: 0 2px 12px rgba(255,47,121,0.35);
-    transition: background 0.15s ease, transform 0.1s ease;
+    transition: filter 0.15s ease, transform 0.1s ease;
   }
-  button.primary:hover:not(:disabled) { background: #ff4f8f; }
+  button.primary:hover:not(:disabled) { filter: brightness(1.12); }
   button.primary:active:not(:disabled) { transform: translateY(1px); }
   button.primary:disabled { opacity: 0.6; cursor: default; box-shadow: none; }
   button.secondary {
@@ -175,17 +205,24 @@
   .week-body .li-val.up { color: var(--good); }
   .week-body .li-val.down { color: var(--critical); }
 
-  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tabs {
+    position: relative; display: inline-flex; gap: 2px; margin-bottom: 16px;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 4px;
+  }
+  .tabs-indicator {
+    position: absolute; top: 4px; bottom: 4px; left: 4px;
+    width: calc(50% - 4px);
+    background: linear-gradient(135deg, var(--series-1), #8a2be8);
+    border-radius: 9px; box-shadow: 0 2px 14px rgba(255,47,121,0.4);
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+  }
   .tab-btn {
-    padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border);
-    background: var(--surface-1); color: var(--text-secondary); cursor: pointer; font-weight: 600;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    position: relative; z-index: 1;
+    padding: 8px 20px; border-radius: 9px; border: none;
+    background: transparent; color: var(--text-secondary); cursor: pointer; font-weight: 600;
+    transition: color 0.2s ease;
   }
-  .tab-btn:hover { border-color: var(--series-1); color: var(--text-primary); }
-  .tab-btn.active {
-    background: var(--series-1); border-color: var(--series-1); color: white;
-    box-shadow: 0 2px 12px rgba(255,47,121,0.35);
-  }
+  .tab-btn.active { color: white; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
@@ -206,7 +243,10 @@
 
 <div id="loginScreen" class="login-screen" style="display:none">
   <div class="login-card">
-    <h1>📓 Diário de Trade</h1>
+    <div class="brand">
+      <div class="brand-mark">DT</div>
+      <h1>Diário de Trade</h1>
+    </div>
     <p class="subtitle">Entre para acessar o diário compartilhado</p>
     <form id="loginForm">
       <div class="field">
@@ -225,9 +265,12 @@
 
 <div id="appRoot" class="app" style="display:none">
   <div class="top-actions">
-    <div>
-      <h1>📓 Diário de Trade</h1>
-      <p class="subtitle" style="margin-bottom:0">Registro das operações do dia — ativo padrão XAUUSD (Ouro). Capital e meta são fixos; o saldo real você acompanha no painel da mesa.</p>
+    <div class="brand">
+      <div class="brand-mark">DT</div>
+      <div>
+        <h1>Diário de Trade</h1>
+        <p class="subtitle" style="margin:2px 0 0">XAUUSD (Ouro) · capital e meta fixos</p>
+      </div>
     </div>
   </div>
   <div class="top-actions">
@@ -242,8 +285,9 @@
   </div>
 
   <div class="tabs">
-    <button type="button" class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
-    <button type="button" class="tab-btn" data-tab="operacoes">📝 Operações</button>
+    <div class="tabs-indicator" id="tabsIndicator"></div>
+    <button type="button" class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button type="button" class="tab-btn" data-tab="operacoes">Operações</button>
   </div>
 
   <div id="tabDashboard" class="tab-panel active">
@@ -675,13 +719,27 @@ function renderChart() {
 
   wrap.innerHTML = `
     <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Evolução até a meta">
+      <defs>
+        <linearGradient id="evoLineGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#ff2f79"/>
+          <stop offset="100%" stop-color="#8a2be8"/>
+        </linearGradient>
+        <linearGradient id="evoAreaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ff2f79" stop-opacity="0.32"/>
+          <stop offset="100%" stop-color="#ff2f79" stop-opacity="0"/>
+        </linearGradient>
+        <filter id="evoGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3.5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
       ${gridLines}
       <line x1="${padL}" y1="${meta1Y}" x2="${W - padR}" y2="${meta1Y}" stroke="var(--warning)" stroke-width="1.5" stroke-dasharray="4 3"/>
       <text x="${W - padR}" y="${Number(meta1Y) - 5}" text-anchor="end" class="goal-label">Meta 1: ${fmtPct(meta1,1)}</text>
       <line x1="${padL}" y1="${metaTotalY}" x2="${W - padR}" y2="${metaTotalY}" stroke="var(--good)" stroke-width="1.5" stroke-dasharray="4 3"/>
       <text x="${W - padR}" y="${Number(metaTotalY) - 5}" text-anchor="end" class="goal-label">Meta total: ${fmtPct(metaTotal,1)}</text>
-      <path d="${areaPath}" fill="var(--series-1-wash)" stroke="none"/>
-      <path d="${linePath}" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="${areaPath}" fill="url(#evoAreaGrad)" stroke="none"/>
+      <path d="${linePath}" fill="none" stroke="url(#evoLineGrad)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" filter="url(#evoGlow)"/>
       ${dots}
       <text x="${xScale(points.length - 1).toFixed(1)}" y="${(yScale(lastPoint.y) - 12).toFixed(1)}" text-anchor="end" class="goal-label" font-weight="600">${fmtPct(lastPoint.y,2)}</text>
     </svg>
@@ -858,12 +916,15 @@ function renderAll() {
 }
 
 // ---------- tabs ----------
-document.querySelectorAll('.tab-btn').forEach(btn => {
+const tabButtons = [...document.querySelectorAll('.tab-btn')];
+const tabsIndicator = document.getElementById('tabsIndicator');
+tabButtons.forEach((btn, i) => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    tabButtons.forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(btn.dataset.tab === 'dashboard' ? 'tabDashboard' : 'tabOperacoes').classList.add('active');
+    tabsIndicator.style.transform = `translateX(${i * 100}%)`;
   });
 });
 
