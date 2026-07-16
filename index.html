@@ -51,6 +51,9 @@
       <button type="button" class="nav-item" data-tab="operacoes">
         <span class="nav-dot"></span>Operações
       </button>
+      <button type="button" class="nav-item" data-tab="amigos">
+        <span class="nav-dot"></span>Outros
+      </button>
     </nav>
 
     <div class="sidebar-account">
@@ -165,12 +168,12 @@
           <input type="text" id="fAtivo" required>
         </div>
         <div class="field">
-          <label for="fRiscoPct">Risco (%)</label>
-          <input type="number" id="fRiscoPct" step="0.01" min="0" required>
+          <label for="fRiscoValor">Risco ($)</label>
+          <input type="number" id="fRiscoValor" step="0.01" min="0" required>
         </div>
         <div class="field">
-          <label for="fRiscoValor">Risco ($)</label>
-          <input type="number" id="fRiscoValor" step="0.01" min="0">
+          <label for="fRiscoPct">Risco (%) <span style="font-weight:400">— calculado automaticamente</span></label>
+          <input type="number" id="fRiscoPct" step="0.01" min="0" readonly>
         </div>
         <div class="field wide">
           <label>Resultado</label>
@@ -197,7 +200,7 @@
   </div>
 
   <div class="card">
-    <h2>Todas as operações</h2>
+    <h2>Suas operações <span class="hint">quer ver de outra pessoa? use a aba "Outros"</span></h2>
     <div class="form-grid" style="margin-bottom:12px">
       <div class="field">
         <label for="filterSearch">Buscar (ativo ou descrição)</label>
@@ -225,11 +228,27 @@
         </thead>
         <tbody id="tradesBody"></tbody>
       </table>
-      <div class="empty-note" id="emptyNote" style="display:none">Nenhuma operação registrada ainda.</div>
+      <div class="empty-note" id="emptyNote" style="display:none">Você ainda não registrou nenhuma operação.</div>
     </div>
       </div>
 
       <p class="footnote">Os dados ficam salvos na nuvem (Firebase) e sincronizam entre os dois. Use "Exportar backup" de vez em quando como cópia de segurança extra.</p>
+    </div>
+
+    <div id="tabAmigos" class="tab-panel">
+      <div class="topbar">
+        <div>
+          <div class="topbar-crumb">Dashboards / Outros</div>
+          <h2 class="topbar-title">Outros usuários</h2>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Escolher usuário <span class="hint">clique num nome pra ver o desempenho, os riscos e as operações dele</span></h2>
+        <div id="amigoSelect"></div>
+      </div>
+
+      <div id="amigoStats"></div>
     </div>
   </main>
 </div>
@@ -349,7 +368,7 @@ function attachListeners() {
   unsubSettings = onSnapshot(doc(db, 'app', 'settings'), (snap) => {
     state.settings = snap.exists() ? Object.assign({}, defaultSettings, snap.data()) : Object.assign({}, defaultSettings);
     loadSettingsForm();
-    if (!editingId) document.getElementById('fRiscoPct').value = state.settings.riscoPadraoPct;
+    if (!editingId) applyDefaultRisco();
     renderAll();
   }, (err) => {
     alert('Não foi possível ler as configurações do banco: ' + err.message + '\n\nVerifique se as regras do Firestore foram publicadas.');
@@ -396,8 +415,14 @@ function metaTotalPct() {
 }
 
 // ---------- derived series ----------
-function sortedTrades() {
-  return [...state.trades].sort((a, b) => {
+function myEmail() {
+  return (auth.currentUser && auth.currentUser.email) || null;
+}
+function myTrades() {
+  return state.trades.filter(t => t.createdByEmail === myEmail());
+}
+function sortedTrades(trades) {
+  return [...(trades || state.trades)].sort((a, b) => {
     if (a.date !== b.date) return a.date < b.date ? -1 : 1;
     return (a.createdAt || 0) - (b.createdAt || 0);
   });
@@ -406,10 +431,12 @@ function resultadoPctOf(t) {
   const cap = capitalFixo();
   return cap ? (Number(t.resultadoValor || 0) / cap) * 100 : 0;
 }
-function computeSeries() {
+// Cumulativo (cumValor/cumPct) depende da ordem, então precisa ser calculado
+// já em cima do subconjunto certo (ex: só as suas operações) — nunca filtre depois.
+function computeSeries(trades) {
   const cap = capitalFixo();
   let cumValor = 0;
-  return sortedTrades().map(t => {
+  return sortedTrades(trades).map(t => {
     cumValor += Number(t.resultadoValor || 0);
     return Object.assign({}, t, {
       resultadoPct: resultadoPctOf(t),
@@ -458,7 +485,7 @@ function computeLossStreak(series) {
   return streak;
 }
 function renderAlerts() {
-  const series = computeSeries();
+  const series = computeSeries(myTrades());
   const cumPct = series.length ? series[series.length - 1].cumPct : 0;
   const metaTotal = metaTotalPct();
   const streak = computeLossStreak(series);
@@ -489,7 +516,7 @@ function metaProgressHtml(label, targetPct, cumPct, cumValor, cap) {
 }
 
 function renderTiles() {
-  const series = computeSeries();
+  const series = computeSeries(myTrades());
   const cap = capitalFixo();
   const cumValor = series.length ? series[series.length - 1].cumValor : 0;
   const cumPct = series.length ? series[series.length - 1].cumPct : 0;
@@ -533,7 +560,7 @@ function renderTiles() {
 
 // ---------- render: chart ----------
 function renderChart() {
-  const series = computeSeries();
+  const series = computeSeries(myTrades());
   const wrap = document.getElementById('chartWrap');
   const meta1 = Number(state.settings.meta1Pct || 0);
   const metaTotal = metaTotalPct();
@@ -613,7 +640,7 @@ function roundedTopBarPath(x, y, w, h, r) {
   return `M ${x} ${y + h} L ${x} ${y + r} Q ${x} ${y} ${x + r} ${y} L ${x + w - r} ${y} Q ${x + w} ${y} ${x + w} ${y + r} L ${x + w} ${y + h} Z`;
 }
 function renderWeekdayChart() {
-  const series = computeSeries();
+  const series = computeSeries(myTrades());
   const wrap = document.getElementById('weekdayChartWrap');
   if (!series.length) {
     wrap.innerHTML = '<div class="empty-note">Adicione operações para ver a taxa de acerto por dia da semana.</div>';
@@ -668,7 +695,7 @@ function renderWeekdayChart() {
 
 // ---------- render: take vs. stop donut ----------
 function renderDonut() {
-  const series = computeSeries();
+  const series = computeSeries(myTrades());
   const wrap = document.getElementById('donutWrap');
   if (!series.length) {
     wrap.innerHTML = '<div class="empty-note">Sem operações ainda.</div>';
@@ -739,9 +766,87 @@ function renderUsers() {
   `).join('')}</div>`;
 }
 
+// ---------- render: ver operações de outros usuários ----------
+let selectedAmigoEmail = '';
+function renderAmigoSelect() {
+  const wrap = document.getElementById('amigoSelect');
+  const others = [...state.users].filter(u => u.email && u.email !== myEmail())
+    .sort((a, b) => a.email.localeCompare(b.email));
+  if (!others.length) {
+    wrap.innerHTML = '<div class="empty-note">Nenhum outro usuário registrado ainda.</div>';
+    return;
+  }
+  wrap.innerHTML = `<div class="user-list">${others.map(u => `
+    <div class="user-item user-item-clickable ${u.email === selectedAmigoEmail ? 'active' : ''}" data-email="${escapeHtml(u.email)}">
+      <div class="user-avatar">${initialsOf(u.email)}</div>
+      <div class="user-email">${escapeHtml(u.email)}</div>
+    </div>
+  `).join('')}</div>`;
+  wrap.querySelectorAll('[data-email]').forEach(el => {
+    el.addEventListener('click', () => {
+      selectedAmigoEmail = el.getAttribute('data-email');
+      renderAmigoSelect();
+      renderAmigoStats();
+    });
+  });
+}
+function renderAmigoStats() {
+  const el = document.getElementById('amigoStats');
+  if (!selectedAmigoEmail) {
+    el.innerHTML = '<div class="card"><div class="empty-note">Clique em um usuário acima pra ver as operações dele.</div></div>';
+    return;
+  }
+  const series = computeSeries(state.trades.filter(t => t.createdByEmail === selectedAmigoEmail));
+  if (!series.length) {
+    el.innerHTML = '<div class="card"><div class="empty-note">Esse usuário ainda não registrou nenhuma operação.</div></div>';
+    return;
+  }
+  const resultado = series.reduce((s, t) => s + Number(t.resultadoValor || 0), 0);
+  const wins = series.filter(t => t.tipo === 'take').length;
+  const winRate = (wins / series.length) * 100;
+  const rows = series.slice().reverse().map(t => `
+    <tr>
+      <td>${fmtDateBR(t.date)}</td>
+      <td>${escapeHtml(t.ativo)}</td>
+      <td><span class="badge ${t.tipo}">${t.tipo === 'take' ? 'Take' : 'Stop'}</span></td>
+      <td class="num">${fmtPct(t.riscoPct)}</td>
+      <td class="num">${fmtMoney(t.riscoValor)}</td>
+      <td class="num" style="color:${t.resultadoValor >= 0 ? 'var(--good)' : 'var(--critical)'}">${fmtMoney(t.resultadoValor)}</td>
+      <td class="num" style="color:${t.resultadoValor >= 0 ? 'var(--good)' : 'var(--critical)'}">${fmtPct(t.resultadoPct, 2)}</td>
+      <td>${escapeHtml(t.descricao)}</td>
+    </tr>
+  `).join('');
+  el.innerHTML = `
+    <div class="tiles">
+      <div class="tile">
+        <div class="label">Operações</div>
+        <div class="value">${series.length}</div>
+      </div>
+      <div class="tile hero">
+        <div class="label">Resultado</div>
+        <div class="value ${resultado >= 0 ? 'up' : 'down'}">${fmtMoney(resultado)}</div>
+      </div>
+      <div class="tile">
+        <div class="label">Taxa de acerto</div>
+        <div class="value" style="font-size:1.2rem">${winRate.toFixed(0)}%</div>
+        <div class="delta" style="color:var(--text-muted)">${wins} take / ${series.length - wins} stop</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Operações de ${escapeHtml(selectedAmigoEmail)}</h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Data</th><th>Ativo</th><th>Resultado</th><th class="num">Risco %</th><th class="num">Risco $</th><th class="num">Valor $</th><th class="num">%</th><th>Descrição</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 // ---------- render: weekly report ----------
 function renderWeekly() {
-  const series = computeSeries();
+  const series = computeSeries(myTrades());
   const weeks = groupByWeek(series);
   const el = document.getElementById('weeklyReport');
   if (!weeks.length) {
@@ -807,13 +912,13 @@ function applyFilters(series) {
   });
 }
 function renderTable() {
-  const all = computeSeries().slice().reverse();
+  const all = computeSeries(myTrades()).slice().reverse();
   const series = applyFilters(all);
   const body = document.getElementById('tradesBody');
   const emptyNote = document.getElementById('emptyNote');
   if (!series.length) {
     body.innerHTML = '';
-    emptyNote.textContent = all.length ? 'Nenhuma operação encontrada com esse filtro.' : 'Nenhuma operação registrada ainda.';
+    emptyNote.textContent = all.length ? 'Nenhuma operação encontrada com esse filtro.' : 'Você ainda não registrou nenhuma operação.';
     emptyNote.style.display = 'block';
     return;
   }
@@ -847,18 +952,21 @@ function renderAll() {
   renderDonut();
   renderActivity();
   renderUsers();
+  renderAmigoSelect();
+  renderAmigoStats();
   renderWeekly();
   renderTable();
 }
 
 // ---------- sidebar nav ----------
+const tabPanelIds = { dashboard: 'tabDashboard', operacoes: 'tabOperacoes', amigos: 'tabAmigos' };
 const navButtons = [...document.querySelectorAll('.nav-item[data-tab]')];
 navButtons.forEach((btn) => {
   btn.addEventListener('click', () => {
     navButtons.forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById(btn.dataset.tab === 'dashboard' ? 'tabDashboard' : 'tabOperacoes').classList.add('active');
+    document.getElementById(tabPanelIds[btn.dataset.tab]).classList.add('active');
   });
 });
 
@@ -881,22 +989,24 @@ function resetForm() {
   document.getElementById('formTitle').textContent = 'Nova operação';
   document.getElementById('btnSubmit').textContent = 'Adicionar operação';
   document.getElementById('btnCancelEdit').style.display = 'none';
-  document.getElementById('fRiscoPct').value = state.settings.riscoPadraoPct;
-  document.getElementById('fRiscoValor').dataset.touched = '';
-  suggestRiscoValor();
+  applyDefaultRisco();
   updateResultadoPctPreview();
 }
 
-function suggestRiscoValor() {
-  const pct = Number(document.getElementById('fRiscoPct').value || 0);
-  const valorField = document.getElementById('fRiscoValor');
-  if (!pct) { if (!valorField.dataset.touched) valorField.value = ''; return; }
-  if (!valorField.dataset.touched) {
-    valorField.value = (capitalFixo() * pct / 100).toFixed(2);
-  }
+// Risco ($) é o que muda a cada operação (depende do stop/lote); o % é só
+// o reflexo automático disso sobre o capital fixo, não faz sentido editar os dois.
+function updateRiscoPctFromValor() {
+  const valor = Number(document.getElementById('fRiscoValor').value || 0);
+  const cap = capitalFixo();
+  document.getElementById('fRiscoPct').value = cap ? ((valor / cap) * 100).toFixed(2) : '0.00';
 }
-document.getElementById('fRiscoPct').addEventListener('input', suggestRiscoValor);
-document.getElementById('fRiscoValor').addEventListener('input', (e) => { e.target.dataset.touched = '1'; });
+function applyDefaultRisco() {
+  const pct = Number(state.settings.riscoPadraoPct || 0);
+  const cap = capitalFixo();
+  document.getElementById('fRiscoValor').value = cap && pct ? (cap * pct / 100).toFixed(2) : '';
+  updateRiscoPctFromValor();
+}
+document.getElementById('fRiscoValor').addEventListener('input', updateRiscoPctFromValor);
 
 function updateResultadoPctPreview() {
   const raw = Number(document.getElementById('fResultadoValor').value || 0);
@@ -943,9 +1053,8 @@ function startEdit(id) {
   editingId = id;
   document.getElementById('fDate').value = t.date;
   document.getElementById('fAtivo').value = t.ativo;
-  document.getElementById('fRiscoPct').value = t.riscoPct;
   document.getElementById('fRiscoValor').value = t.riscoValor;
-  document.getElementById('fRiscoValor').dataset.touched = '1';
+  updateRiscoPctFromValor();
   setTipo(t.tipo);
   document.getElementById('fResultadoValor').value = Math.abs(Number(t.resultadoValor) || 0);
   document.getElementById('fDesc').value = t.descricao;
@@ -1051,7 +1160,7 @@ document.getElementById('pdfPresets').addEventListener('click', (e) => {
 document.getElementById('btnPdfConfirm').addEventListener('click', () => {
   const from = pdfFromInput.value;
   const to = pdfToInput.value;
-  const series = filterByDateRange(computeSeries(), from, to);
+  const series = filterByDateRange(computeSeries(myTrades()), from, to);
   if (!series.length) { alert('Nenhuma operação encontrada nesse período.'); return; }
   pdfModalOverlay.style.display = 'none';
 

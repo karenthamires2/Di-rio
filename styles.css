@@ -181,6 +181,7 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 3px var(--series-1-wash);
 }
 textarea { resize: vertical; min-height: 44px; }
+input[readonly] { opacity: 0.65; cursor: default; }
 .field { margin-bottom: 4px; }
 .field.wide { grid-column: 1 / -1; }
 
@@ -301,6 +302,15 @@ svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
 }
 .user-email { font-size: 0.85rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user-since { font-size: 0.72rem; color: var(--text-muted); }
+.user-item-clickable {
+  cursor: pointer; padding: 8px 10px; border-radius: 10px; border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.user-item-clickable:hover { background: var(--surface-2); }
+.user-item-clickable.active {
+  background: var(--series-1-wash); border-color: var(--series-1-dim);
+}
+.user-item-clickable.active .user-email { color: var(--text-primary); font-weight: 600; }
 
 /* Modal (período do relatório) */
 .modal-overlay {
