@@ -325,3 +325,5 @@ svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
 }
 .modal h2 { margin: 0 0 2px; font-size: 1.1rem; }
 #pdfPresets button { font-size: 0.78rem; padding: 7px 12px; }
+.modal-critical { border-color: var(--critical); box-shadow: 0 12px 40px rgba(230,103,103,0.25); }
+.modal-critical h2 { color: var(--critical); }
