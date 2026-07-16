@@ -298,7 +298,7 @@ import {
   getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import {
-  initializeFirestore, persistentLocalCache, persistentSingleTabManager,
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
   doc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, getDocs
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
@@ -306,8 +306,10 @@ const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 // Cache persistente em IndexedDB: operações salvas ficam guardadas no navegador
 // e sincronizam quando a conexão voltar, então um F5 não apaga nada em trânsito.
+// Multi-tab: se o site ficar aberto em mais de uma aba no mesmo navegador, as duas
+// continuam sincronizando (com single-tab, só a primeira aba aberta funcionava direito).
 const db = initializeFirestore(fbApp, {
-  localCache: persistentLocalCache({ tabManager: persistentSingleTabManager({}) })
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
 });
 
 const defaultSettings = { capitalFixo: 50000, meta1Pct: 8, meta2Pct: 5, riscoPadraoPct: 0.5, moeda: 'US$' };
@@ -373,7 +375,7 @@ function registerCurrentUser(user) {
   setDoc(doc(db, 'users', user.uid), {
     email: user.email,
     lastSeen: Date.now()
-  }, { merge: true }).catch(() => {});
+  }, { merge: true }).catch(err => console.error('Falha ao registrar usuário em "users":', err));
 }
 
 function attachListeners() {
@@ -394,7 +396,7 @@ function attachListeners() {
   unsubUsers = onSnapshot(collection(db, 'users'), (snap) => {
     state.users = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
     renderAll();
-  }, () => { /* lista de usuários é só um extra visual, não trava o app se falhar */ });
+  }, (err) => { console.error('Falha ao ler a coleção "users":', err); });
 }
 
 // ---------- formatting ----------
