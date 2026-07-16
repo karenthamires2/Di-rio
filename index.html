@@ -7,237 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root { color-scheme: dark; }
-  body {
-    --surface-1:      #1a1216;
-    --surface-2:      #0a0708;
-    --text-primary:   #ffffff;
-    --text-secondary: #cbb6c0;
-    --text-muted:     #8a7a82;
-    --gridline:       #2e2226;
-    --baseline:       #443640;
-    --border:         rgba(255,255,255,0.10);
-    --series-1:       #ff2f79;
-    --series-1-dim:   #b31d54;
-    --series-1-wash:  rgba(255,47,121,0.14);
-    --good:           #0ca30c;
-    --good-wash:      rgba(12,163,12,0.14);
-    --critical:       #e66767;
-    --critical-wash:  rgba(230,103,103,0.14);
-    --warning:        #c98500;
-  }
-
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
-  body {
-    background:
-      radial-gradient(ellipse 1000px 560px at 12% -10%, rgba(255,47,121,0.18), transparent 60%),
-      radial-gradient(ellipse 800px 620px at 105% 15%, rgba(140,50,220,0.12), transparent 55%),
-      var(--surface-2);
-    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
-    color: var(--text-primary);
-    position: relative;
-  }
-  body::before {
-    content: '';
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    opacity: 0.05; mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-  h1, h2, .value { font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif; }
-  .app { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 20px 16px 64px; }
-  h1 { font-size: 1.3rem; margin: 0; letter-spacing: -0.01em; }
-  .subtitle { color: var(--text-secondary); font-size: 0.9rem; margin: 4px 0 0; }
-
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .brand-mark {
-    width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
-    background: linear-gradient(135deg, var(--series-1), #8a2be8);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; color: #fff;
-    box-shadow: 0 4px 18px rgba(255,47,121,0.4);
-  }
-
-  .card {
-    position: relative;
-    background: var(--surface-1);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 14px rgba(0,0,0,0.4);
-    overflow: hidden;
-  }
-  .card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, var(--series-1), transparent 70%);
-    opacity: 0.7;
-  }
-  .card h2 { font-size: 1.02rem; margin: 0 0 12px; font-weight: 600; }
-  .card h2 .hint { color: var(--text-muted); font-weight: 400; font-family: 'Inter', sans-serif; font-size: 0.8rem; }
-
-  /* Login screen */
-  .login-screen {
-    min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
-    position: relative; z-index: 1;
-    background:
-      radial-gradient(ellipse 800px 560px at 50% 0%, rgba(255,47,121,0.20), transparent 60%),
-      radial-gradient(ellipse 700px 500px at 100% 100%, rgba(140,50,220,0.12), transparent 55%),
-      var(--surface-2);
-  }
-  .login-card {
-    background: var(--surface-1); border: 1px solid var(--border); border-radius: 20px;
-    padding: 32px; width: 100%; max-width: 340px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.55);
-  }
-  .login-card .brand { flex-direction: column; text-align: center; margin-bottom: 8px; }
-  .login-card h1 { text-align: center; }
-  .login-card .subtitle { text-align: center; }
-
-  /* Stat tiles */
-  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
-  .tile {
-    background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px; padding: 14px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.35); transition: border-color 0.15s ease, transform 0.15s ease;
-  }
-  .tile:hover { border-color: var(--series-1-dim); transform: translateY(-2px); }
-  .tile.hero {
-    border-color: var(--series-1); box-shadow: 0 4px 24px rgba(255,47,121,0.28);
-    background: linear-gradient(160deg, rgba(255,47,121,0.10), var(--surface-1) 60%);
-  }
-  .tile .label { color: var(--text-secondary); font-size: 0.78rem; margin-bottom: 6px; }
-  .tile .value { font-size: 1.5rem; font-weight: 600; font-variant-numeric: proportional-nums; }
-  .tile .delta { font-size: 0.8rem; margin-top: 4px; }
-  .tile .delta.up { color: var(--good); }
-  .tile .delta.down { color: var(--critical); }
-  .tile.hero .value { font-size: 2.1rem; }
-  .tile .value.up { color: var(--good); }
-  .tile .value.down { color: var(--critical); }
-
-  .meter-track { width: 100%; height: 10px; border-radius: 999px; background: var(--series-1-wash); margin-top: 8px; overflow: hidden; }
-  .meter-fill { height: 100%; background: linear-gradient(90deg, var(--series-1), #8a2be8); border-radius: 999px; transition: width 0.4s ease; }
-  .meter-fill.good { background: linear-gradient(90deg, var(--good), #2ecc71); }
-
-  /* Forms */
-  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-  label { display: block; font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 4px; }
-  input, select, textarea, button {
-    font-family: inherit; font-size: 0.9rem;
-  }
-  input, select, textarea {
-    width: 100%; padding: 8px 10px; border-radius: 8px;
-    border: 1px solid var(--border); background: var(--surface-2); color: var(--text-primary);
-    transition: border-color 0.15s ease;
-  }
-  input:focus, select:focus, textarea:focus {
-    outline: none; border-color: var(--series-1);
-    box-shadow: 0 0 0 3px var(--series-1-wash);
-  }
-  textarea { resize: vertical; min-height: 44px; }
-  .field { margin-bottom: 4px; }
-  .field.wide { grid-column: 1 / -1; }
-
-  .toggle-group { display: flex; gap: 8px; }
-  .toggle-btn {
-    flex: 1; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border);
-    background: var(--surface-2); color: var(--text-secondary); cursor: pointer; text-align: center; font-weight: 600;
-  }
-  .toggle-btn.active-take { background: var(--good-wash); border-color: var(--good); color: var(--good); }
-  .toggle-btn.active-stop { background: var(--critical-wash); border-color: var(--critical); color: var(--critical); }
-
-  button.primary {
-    background: linear-gradient(135deg, var(--series-1), #8a2be8); color: white; border: none; border-radius: 10px;
-    padding: 9px 16px; cursor: pointer; font-weight: 600;
-    box-shadow: 0 2px 12px rgba(255,47,121,0.35);
-    transition: filter 0.15s ease, transform 0.1s ease;
-  }
-  button.primary:hover:not(:disabled) { filter: brightness(1.12); }
-  button.primary:active:not(:disabled) { transform: translateY(1px); }
-  button.primary:disabled { opacity: 0.6; cursor: default; box-shadow: none; }
-  button.secondary {
-    background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 8px;
-    padding: 9px 16px; cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease;
-  }
-  button.secondary:hover { border-color: var(--series-1); color: var(--text-primary); }
-  button.link { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px 6px; font-size: 0.8rem; text-decoration: underline; }
-  button.link:hover { color: var(--series-1); }
-  .actions-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-  .error-text { color: var(--critical); font-size: 0.85rem; min-height: 18px; margin: 6px 0; }
-
-  /* Table */
-  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--gridline); }
-  th { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.02em; }
-  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
-  .badge.take { background: var(--good-wash); color: var(--good); }
-  .badge.stop { background: var(--critical-wash); color: var(--critical); }
-  .row-actions button { margin-right: 4px; }
-  .empty-note { color: var(--text-muted); font-size: 0.85rem; padding: 12px 0; text-align: center; }
-
-  /* Chart */
-  .chart-wrap { width: 100%; overflow-x: auto; }
-  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
-  .axis-label { fill: var(--text-muted); font-size: 10px; }
-  .goal-label { fill: var(--text-secondary); font-size: 10px; }
-
-  /* Weekly report */
-  .week-card { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
-  .week-head {
-    display: flex; justify-content: space-between; align-items: center; gap: 10px;
-    padding: 10px 12px; background: var(--surface-2); cursor: pointer; flex-wrap: wrap;
-  }
-  .week-head .range { font-weight: 600; font-size: 0.88rem; }
-  .week-head .stats { display: flex; gap: 14px; font-size: 0.8rem; color: var(--text-secondary); }
-  .week-head .stats b { color: var(--text-primary); }
-  .week-result.up { color: var(--good); }
-  .week-result.down { color: var(--critical); }
-  .week-body { padding: 0 12px 12px; display: none; }
-  .week-body.open { display: block; }
-  .week-body ul { list-style: none; margin: 8px 0 0; padding: 0; }
-  .week-body li { padding: 8px 0; border-bottom: 1px solid var(--gridline); font-size: 0.85rem; }
-  .week-body li:last-child { border-bottom: none; }
-  .week-body .li-top { display: flex; justify-content: space-between; gap: 8px; }
-  .week-body .li-date { color: var(--text-muted); font-size: 0.75rem; }
-  .week-body .li-desc { color: var(--text-secondary); margin-top: 2px; }
-  .week-body .li-val { font-variant-numeric: tabular-nums; font-weight: 600; }
-  .week-body .li-val.up { color: var(--good); }
-  .week-body .li-val.down { color: var(--critical); }
-
-  .tabs {
-    position: relative; display: inline-flex; gap: 2px; margin-bottom: 16px;
-    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 4px;
-  }
-  .tabs-indicator {
-    position: absolute; top: 4px; bottom: 4px; left: 4px;
-    width: calc(50% - 4px);
-    background: linear-gradient(135deg, var(--series-1), #8a2be8);
-    border-radius: 9px; box-shadow: 0 2px 14px rgba(255,47,121,0.4);
-    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
-  }
-  .tab-btn {
-    position: relative; z-index: 1;
-    padding: 8px 20px; border-radius: 9px; border: none;
-    background: transparent; color: var(--text-secondary); cursor: pointer; font-weight: 600;
-    transition: color 0.2s ease;
-  }
-  .tab-btn.active { color: white; }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  .alert-banner { padding: 12px 14px; border-radius: 10px; font-size: 0.88rem; margin-bottom: 10px; border: 1px solid; }
-  .alert-banner.alert-good { background: var(--good-wash); border-color: var(--good); }
-  .alert-banner.alert-critical { background: var(--critical-wash); border-color: var(--critical); }
-
-  .top-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-  .top-actions .buttons { display: flex; gap: 8px; flex-wrap: wrap; }
-  .session-info { color: var(--text-muted); font-size: 0.8rem; }
-  .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; align-items: end; }
-  #importFile { display: none; }
-  .footnote { color: var(--text-muted); font-size: 0.75rem; margin-top: 10px; }
-  .meta-total-note { grid-column: 1 / -1; color: var(--text-secondary); font-size: 0.82rem; margin: -2px 0 4px; }
-</style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -276,6 +46,7 @@
   <div class="top-actions">
     <div class="session-info">Conectado como <span id="sessionEmail"></span></div>
     <div class="buttons">
+      <button class="secondary" id="btnExportPdf">Relatório em PDF</button>
       <button class="secondary" id="btnExport">Exportar backup (.json)</button>
       <button class="secondary" id="btnImportTrigger">Importar backup</button>
       <input type="file" id="importFile" accept="application/json">
@@ -369,7 +140,7 @@
           </div>
         </div>
         <div class="field">
-          <label for="fResultadoValor">Resultado ($) <span style="font-weight:400">— use negativo p/ perda</span></label>
+          <label for="fResultadoValor">Resultado ($) <span style="font-weight:400">— digite o valor em módulo (positivo); Stop vira negativo sozinho</span></label>
           <input type="number" id="fResultadoValor" step="0.01" required>
           <div id="resultadoPctPreview" class="footnote" style="margin-top:6px"></div>
         </div>
@@ -429,12 +200,17 @@ import {
   getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import {
-  getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, getDocs
+  initializeFirestore, persistentLocalCache, persistentSingleTabManager,
+  doc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, getDocs
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
-const db = getFirestore(fbApp);
+// Cache persistente em IndexedDB: operações salvas ficam guardadas no navegador
+// e sincronizam quando a conexão voltar, então um F5 não apaga nada em trânsito.
+const db = initializeFirestore(fbApp, {
+  localCache: persistentLocalCache({ tabManager: persistentSingleTabManager({}) })
+});
 
 const defaultSettings = { capitalFixo: 50000, meta1Pct: 8, meta2Pct: 5, riscoPadraoPct: 0.5, moeda: 'US$' };
 let state = { settings: Object.assign({}, defaultSettings), trades: [] };
@@ -933,6 +709,7 @@ function setTipo(tipo) {
   currentTipo = tipo;
   document.getElementById('btnTake').classList.toggle('active-take', tipo === 'take');
   document.getElementById('btnStop').classList.toggle('active-stop', tipo === 'stop');
+  updateResultadoPctPreview();
 }
 document.getElementById('btnTake').addEventListener('click', () => setTipo('take'));
 document.getElementById('btnStop').addEventListener('click', () => setTipo('stop'));
@@ -964,42 +741,39 @@ document.getElementById('fRiscoPct').addEventListener('input', suggestRiscoValor
 document.getElementById('fRiscoValor').addEventListener('input', (e) => { e.target.dataset.touched = '1'; });
 
 function updateResultadoPctPreview() {
-  const valor = Number(document.getElementById('fResultadoValor').value || 0);
+  const raw = Number(document.getElementById('fResultadoValor').value || 0);
+  const valor = currentTipo === 'stop' ? -Math.abs(raw) : Math.abs(raw);
   const preview = document.getElementById('resultadoPctPreview');
   const cap = capitalFixo();
-  if (!valor || !cap) { preview.textContent = ''; return; }
+  if (!raw || !cap) { preview.textContent = ''; return; }
   const pct = (valor / cap) * 100;
   preview.textContent = `= ${fmtPct(pct, 2)} do capital (${fmtMoney(cap)})`;
   preview.style.color = pct >= 0 ? 'var(--good)' : 'var(--critical)';
 }
 document.getElementById('fResultadoValor').addEventListener('input', updateResultadoPctPreview);
 
-document.getElementById('tradeForm').addEventListener('submit', async (e) => {
+document.getElementById('tradeForm').addEventListener('submit', (e) => {
   e.preventDefault();
+  const rawResultado = Number(document.getElementById('fResultadoValor').value || 0);
+  const targetId = editingId;
   const trade = {
     date: document.getElementById('fDate').value,
     ativo: document.getElementById('fAtivo').value.trim() || 'XAUUSD',
     riscoPct: Number(document.getElementById('fRiscoPct').value || 0),
     riscoValor: Number(document.getElementById('fRiscoValor').value || 0),
     tipo: currentTipo,
-    resultadoValor: Number(document.getElementById('fResultadoValor').value || 0),
+    // Stop sempre subtrai (negativo) e Take sempre soma (positivo), não importa o sinal digitado
+    resultadoValor: currentTipo === 'stop' ? -Math.abs(rawResultado) : Math.abs(rawResultado),
     descricao: document.getElementById('fDesc').value.trim(),
-    createdAt: editingId ? (state.trades.find(t => t.id === editingId) || {}).createdAt || Date.now() : Date.now()
+    createdAt: targetId ? (state.trades.find(t => t.id === targetId) || {}).createdAt || Date.now() : Date.now()
   };
-  const btn = document.getElementById('btnSubmit');
-  btn.disabled = true;
-  try {
-    if (editingId) {
-      await updateDoc(doc(db, 'trades', editingId), trade);
-    } else {
-      await addDoc(collection(db, 'trades'), trade);
-    }
-    resetForm();
-  } catch (err) {
-    alert('Não foi possível salvar a operação: ' + err.message);
-  } finally {
-    btn.disabled = false;
-  }
+  // Não bloqueia o formulário esperando a rede: aplica na hora (cache local) e
+  // libera o form pra próxima operação; erro real de gravação só vira alerta se acontecer.
+  resetForm();
+  const save = targetId
+    ? updateDoc(doc(db, 'trades', targetId), trade)
+    : addDoc(collection(db, 'trades'), trade);
+  save.catch(err => alert('Não foi possível salvar a operação: ' + err.message));
 });
 
 document.getElementById('btnCancelEdit').addEventListener('click', resetForm);
@@ -1014,7 +788,7 @@ function startEdit(id) {
   document.getElementById('fRiscoValor').value = t.riscoValor;
   document.getElementById('fRiscoValor').dataset.touched = '1';
   setTipo(t.tipo);
-  document.getElementById('fResultadoValor').value = t.resultadoValor;
+  document.getElementById('fResultadoValor').value = Math.abs(Number(t.resultadoValor) || 0);
   document.getElementById('fDesc').value = t.descricao;
   document.getElementById('formTitle').textContent = 'Editar operação';
   document.getElementById('btnSubmit').textContent = 'Salvar alterações';
@@ -1067,6 +841,67 @@ document.getElementById('btnClearFilter').addEventListener('click', () => {
   document.getElementById('filterFrom').value = '';
   document.getElementById('filterTo').value = '';
   renderTable();
+});
+
+// ---------- export PDF ----------
+document.getElementById('btnExportPdf').addEventListener('click', () => {
+  const all = computeSeries();
+  const series = applyFilters(all);
+  if (!series.length) { alert('Nenhuma operação para incluir no relatório.'); return; }
+
+  const resultado = series.reduce((s, t) => s + Number(t.resultadoValor || 0), 0);
+  const wins = series.filter(t => t.tipo === 'take').length;
+  const winRate = series.length ? (wins / series.length) * 100 : 0;
+  const periodo = filterFrom || filterTo
+    ? `${filterFrom ? fmtDateBR(filterFrom) : 'início'} – ${filterTo ? fmtDateBR(filterTo) : 'hoje'}`
+    : 'todas as operações';
+
+  const rows = series.map(t => `
+    <tr>
+      <td>${fmtDateBR(t.date)}</td>
+      <td>${escapeHtml(t.ativo)}</td>
+      <td>${t.tipo === 'take' ? 'Take' : 'Stop'}</td>
+      <td class="num">${fmtMoney(t.riscoValor)}</td>
+      <td class="num" style="color:${t.resultadoValor >= 0 ? '#0ca30c' : '#c0392b'}">${fmtMoney(t.resultadoValor)}</td>
+      <td class="num">${fmtPct(t.resultadoPct, 2)}</td>
+      <td>${escapeHtml(t.descricao)}</td>
+    </tr>
+  `).join('');
+
+  const html = `<!doctype html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de operações — Diário de Trade</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; color: #111; margin: 24px; }
+  h1 { font-size: 1.3rem; margin: 0 0 2px; }
+  .subtitle { color: #555; font-size: 0.85rem; margin: 0 0 16px; }
+  .summary { display: flex; gap: 24px; margin-bottom: 18px; font-size: 0.9rem; }
+  .summary b { display: block; font-size: 1.05rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+  th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid #ddd; vertical-align: top; }
+  th { background: #f2f2f2; text-transform: uppercase; font-size: 0.68rem; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  @media print { body { margin: 8mm; } }
+</style>
+</head><body>
+  <h1>Diário de Trade — Relatório de operações</h1>
+  <p class="subtitle">Período: ${periodo} · Gerado em ${fmtDateBR(todayISO())}</p>
+  <div class="summary">
+    <div>Operações<b>${series.length}</b></div>
+    <div>Resultado<b>${fmtMoney(resultado)}</b></div>
+    <div>Taxa de acerto<b>${winRate.toFixed(0)}%</b></div>
+  </div>
+  <table>
+    <thead><tr><th>Data</th><th>Ativo</th><th>Tipo</th><th class="num">Risco $</th><th class="num">Resultado $</th><th class="num">Resultado %</th><th>Descrição</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  if (!win) { alert('O navegador bloqueou a janela do relatório. Permita pop-ups para este site.'); return; }
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  win.onload = () => win.print();
 });
 
 // ---------- export / import / clear ----------
