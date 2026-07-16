@@ -308,9 +308,11 @@ const auth = getAuth(fbApp);
 // e sincronizam quando a conexão voltar, então um F5 não apaga nada em trânsito.
 // Multi-tab: se o site ficar aberto em mais de uma aba no mesmo navegador, as duas
 // continuam sincronizando (com single-tab, só a primeira aba aberta funcionava direito).
+// 'default' é o ID real do banco no projeto (um banco nomeado, não o reservado
+// "(default)") — sem isso o SDK procura um banco que nunca existiu.
 const db = initializeFirestore(fbApp, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-});
+}, 'default');
 
 const defaultSettings = { capitalFixo: 50000, meta1Pct: 8, meta2Pct: 5, riscoPadraoPct: 0.5, moeda: 'US$' };
 let state = { settings: Object.assign({}, defaultSettings), trades: [], users: [] };
