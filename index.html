@@ -326,7 +326,7 @@ onAuthStateChanged(auth, (user) => {
   if (unsubUsers) { unsubUsers(); unsubUsers = null; }
   if (user) {
     loginScreen.style.display = 'none';
-    appRoot.style.display = 'block';
+    appRoot.style.display = 'grid';
     document.getElementById('sessionEmail').textContent = user.email;
     registerCurrentUser(user);
     attachListeners();
